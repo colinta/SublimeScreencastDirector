@@ -25,4 +25,6 @@ Commands
 
 * `screencast_bind_source`: Establishes the current window as the "director"
 * `screencast_bind_target`: Establishes the current window as the "screencast"
-* `screencast_start`: Run current command and move cursor to the next command.
+* `screencast_director_run`: Run current command and move cursor to the next command.
+* `screencast_director_previous`: Moves the "command cursor" backward.
+* `screencast_director_next`: Moves the "command cursor" forward.
