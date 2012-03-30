@@ -1,0 +1,7 @@
+[
+    { "keys": ["ctrl+pageup"], "command": "screencast_director_bind_source" },
+
+    { "keys": ["ctrl+pagedown"], "command": "screencast_director_run" },
+    { "keys": ["ctrl+home"], "command": "screencast_director_previous" },
+    { "keys": ["ctrl+end"], "command": "screencast_director_next" }
+]
