@@ -99,8 +99,14 @@ class ScreencastDirector(object):
             cursor = self.target_view.get_regions('screencast_director')[0]
             if cursor in self.target_view.sel():
                 self.target_view.sel().subtract(cursor)
-            new_cursor = cmd(cursor)
-            if isinstance(new_cursor, long) or isinstance(new_cursor, int):
+
+            e = self.target_view.begin_edit('screencast_director')
+            new_cursor = cmd(cursor, e)
+            self.target_view.end_edit(e)
+
+            if new_cursor is None:
+                new_cursor = cursor
+            elif isinstance(new_cursor, long) or isinstance(new_cursor, int):
                 new_cursor = sublime.Region(new_cursor, new_cursor)
             elif isinstance(new_cursor, tuple):
                 new_cursor = sublime.Region(new_cursor[0], new_cursor[1])
@@ -111,10 +117,8 @@ class ScreencastDirector(object):
 
     def write(self, *what_to_write):
         def _write_letter(letter):
-            def _write(cursor):
-                e = self.target_view.begin_edit('screencast_director')
+            def _write(cursor, e):
                 self.target_view.replace(e, cursor, letter)
-                self.target_view.end_edit(e)
                 return cursor.a + len(letter)
             return _write
 
@@ -163,10 +167,8 @@ class ScreencastDirector(object):
                 right=right, len_right=len(right))
 
         def _write_letters(a, b):
-            def _write(cursor):
-                e = self.target_view.begin_edit('screencast_director')
+            def _write(cursor, e):
                 self.target_view.replace(e, cursor, a + b)
-                self.target_view.end_edit(e)
                 return cursor.a + len(a)
             return _write
 
@@ -188,20 +190,18 @@ class ScreencastDirector(object):
             self.go(len(a))
 
     def insert(self, what_to_write, delay=None):
-        def _insert(cursor):
-            e = self.target_view.begin_edit('screencast_director')
+        def _insert(cursor, e):
             self.target_view.replace(e, cursor, what_to_write)
-            self.target_view.end_edit(e)
             return cursor.a + len(what_to_write)
         self._append_command(_insert, delay)
 
     def delay(self, delay=100):
-        def _delay(cursor):
+        def _delay(cursor, e):
             return cursor
         self._append_command(_delay, delay)
 
     def go(self, where, delay=None):
-        def _go(cursor):
+        def _go(cursor, e):
             cursor = cursor.a + where
             self.target_view.sel().clear()
             self.target_view.sel().add(sublime.Region(cursor, cursor))
@@ -209,7 +209,7 @@ class ScreencastDirector(object):
         self._append_command(_go, delay)
 
     def select_all(self, delay=None):
-        def _select_all(cursor):
+        def _select_all(cursor, e):
             allofit = sublime.Region(0, self.target_view.size())
             self.target_view.sel().clear()
             self.target_view.sel().add(allofit)
@@ -217,10 +217,8 @@ class ScreencastDirector(object):
         self._append_command(_select_all, delay)
 
     def delete(self, delay=None):
-        def _delete(cursor):
-            e = self.target_view.begin_edit('screencast_director')
+        def _delete(cursor, e):
             self.target_view.replace(e, cursor, '')
-            self.target_view.end_edit(e)
             return cursor.a
         self._append_command(_delete, delay)
 
@@ -233,7 +231,7 @@ class ScreencastDirector(object):
         if not name:
             name = '__tmp__'
 
-        def _set_mark(cursor):
+        def _set_mark(cursor, e):
             self._marks[name] = cursor
             return cursor
         self._append_command(_set_mark, delay)
@@ -242,7 +240,7 @@ class ScreencastDirector(object):
         if not name:
             name = '__tmp__'
 
-        def _goto_mark(cursor):
+        def _goto_mark(cursor, e):
             cursor = self._marks.get(name, cursor)
             return cursor
         self._append_command(_goto_mark, delay)
@@ -254,20 +252,20 @@ class ScreencastDirector(object):
         if not name:
             name = '__tmp__'
 
-        def _select_from_mark(cursor):
+        def _select_from_mark(cursor, e):
             a = self._marks.get(name, cursor).a
             b = cursor.b
             return a, b
         self._append_command(_select_from_mark, delay)
 
     def clear_marks(self, delay=None):
-        def _clear_marks(cursor):
+        def _clear_marks(cursor, e):
             self._marks = {}
             return cursor
         self._append_command(_clear_marks, delay)
 
     def run_command(self, command, args=None):
-        def _run_command(cursor):
+        def _run_command(cursor, e):
             self.target_view.sel().add(cursor)
             if args is None:
                 self.target_view.run_command(command)
