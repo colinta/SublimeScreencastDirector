@@ -1,4 +1,4 @@
-ScreencastDirectory for Sublime Text 2
+ScreencastDirector for Sublime Text 2
 ======================================
 
 An `ApplicationCommand` that can be used to direct a screencast.  Allows for interactivity, too, so
@@ -8,7 +8,7 @@ it can mimic all your ST2 commands.
 Installation
 ------------
 
-1. Using Package Control, install "ScreencastDirectory"
+1. Using Package Control, install "ScreencastDirector"
 
 Or:
 
