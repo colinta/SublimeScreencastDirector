@@ -25,7 +25,7 @@ Commands
 
 * `screencast_bind_source`: Establishes the current window as the "director"
 * `screencast_bind_target`: Establishes the current window as the "screencast"
-* `screencast_director_run`: Run current command and move cursor to the next command.
+* `screencast_director_run`: Run current command and move "command cursor" to the next command.
 * `screencast_director_previous`: Moves the "command cursor" backward.
 * `screencast_director_next`: Moves the "command cursor" forward.
 
@@ -59,7 +59,7 @@ and inserts a newline between each argument.
     - \'
 ```
 
-`go`: Move the cursor forward or backward
+`go`: Move the cursor forward or backward by `N` letters.
 
 ```yaml
 - go: -10  # go back ten
@@ -88,14 +88,17 @@ and inserts a newline between each argument.
 `set_mark`: Sets a mark, so you can return somewhere after some crazy commands.
 `goto_mark`: Returns cursor to previous saved position.
 
+a "name" is optional, and defaults to `__tmp__`
+
 ```yaml
-- set_mark
+- set_mark  # same as set_mark: __tmp__
 - set_mark: my_mark_name
-- goto_mark
+- goto_mark  # same as goto_mark: __tmp__
 - goto_mark: my_mark_name
 ```
 
-`select_from_mark`: Selects from the mark to the position of the cursor.
+`select_from_mark`: Selects from the mark to the position of the cursor.  Uses
+the same names (default: __tmp__) as `set_mark`/`goto_mark`.
 
 ```yaml
 - set_mark
@@ -105,7 +108,9 @@ and inserts a newline between each argument.
 - delete
 ```
 
-`run_command`: Run any SublimeText command!
+`run_command`: Run any SublimeText command!  You can do almost anything using
+this one, so if you are tempted to create a new command, consider using this one
+instead.
 
 ```yaml
 - write: "I will fix this mitsake."
