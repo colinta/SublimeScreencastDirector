@@ -83,13 +83,7 @@ class ScreencastDirector(object):
             sublime.status_message('ScreencastDirector compile error: %s' % e.message)
             raise
 
-    def _append_command(self, command, delay=None, delay_min=None, delay_max=None):
-        if delay is None:
-            if delay_min is None:
-                delay_min = 50
-            if delay_max is None:
-                delay_max = 200
-            delay = random.randrange(delay_min, delay_max)
+    def _append_command(self, command, delay=0):
         self.commands.append((command, delay))
 
     def _start_timer(self):
@@ -131,11 +125,12 @@ class ScreencastDirector(object):
             previous_letter = None
             if isinstance(entry, basestring):
                 for letter in entry:
+                    delay_min = 50
+                    delay_max = 200
                     if previous_letter == letter:
                         delay_max = 100
-                    else:
-                        delay_max = None
-                    self._append_command(_write_letter(letter), delay_max=delay_max)
+                    delay = random.randrange(delay_min, delay_max)
+                    self._append_command(_write_letter(letter), delay=delay)
                     previous_letter = letter
             else:
                 self._execute(entry)
