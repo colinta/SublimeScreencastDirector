@@ -12,7 +12,7 @@ class ScreencastDirector(object):
         self.commands = []  # stores a list of commands to perform on the target_view.
         self._marks = {}
 
-    def refresh_source(self):
+    def _refresh_source(self):
         if self.source_view is None:
             return
 
@@ -47,15 +47,31 @@ class ScreencastDirector(object):
         self._start_timer()
 
     def _execute(self, entry):
+        """
+        Parses the "entry", which could be a `dict`, a `list`, or a `string`.
+        A `dict` entry is the most common:
+
+            - write: "a string"
+
+        A list command has the command as the first arg:
+
+            - [write, 'a string']
+
+         and, finally, just a bare command, where `args` defaults to `[]`:
+
+            - delay
+        """
         if isinstance(entry, dict):
             command, args = entry.items()[0]
         elif isinstance(entry, list):
             command, args = entry[0], entry[1:]
         else:
             command, args = entry, []
+
         if not isinstance(args, list):
             args = [args]
         cmd = getattr(self, command)
+
         try:
             cmd(*args)
         except TypeError:
@@ -63,6 +79,9 @@ class ScreencastDirector(object):
                 cmd()
             else:
                 raise
+        except AssertionError as e:
+            sublime.status_message('ScreencastDirector compile error: %s' % e.message)
+            raise
 
     def _append_command(self, command, delay=None, delay_min=None, delay_max=None):
         if delay is None:
@@ -74,6 +93,13 @@ class ScreencastDirector(object):
         self.commands.append((command, delay))
 
     def _start_timer(self):
+        """
+        Pops an item off the command queue and runs it.  The command should
+        accept one argument: a cursor object, of type sublime.Region, and
+        it should return `None` (no changes) or a new cursor region.
+
+        The cursors are cleared and restored between each command.
+        """
         if self.commands:
             cmd, delay = self.commands.pop(0)
             cursor = self.target_view.get_regions('screencast_director')[0]
@@ -296,7 +322,7 @@ class ScreencastDirectorBindSourceCommand(sublime_plugin.ApplicationCommand):
                 )
 
             sublime.status_message('Bound source view and set index to 0')
-            the_director.refresh_source()
+            the_director._refresh_source()
 
 
 class ScreencastDirectorBindTargetCommand(sublime_plugin.ApplicationCommand):
@@ -304,7 +330,7 @@ class ScreencastDirectorBindTargetCommand(sublime_plugin.ApplicationCommand):
         window = sublime.active_window()
         the_director.target_view = window.active_view()
         sublime.status_message('Bound target view')
-        the_director.refresh_source()
+        the_director._refresh_source()
 
 
 class ScreencastDirectorRunCommand(sublime_plugin.ApplicationCommand):
@@ -326,7 +352,7 @@ class ScreencastDirectorRunCommand(sublime_plugin.ApplicationCommand):
 
         the_director._run()
         the_director.index += 1
-        the_director.refresh_source()
+        the_director._refresh_source()
 
 
 class ScreencastDirectorNextCommand(sublime_plugin.ApplicationCommand):
@@ -336,7 +362,7 @@ class ScreencastDirectorNextCommand(sublime_plugin.ApplicationCommand):
             window.run_command('screencast_director_bind_source')
         else:
             the_director.index += 1
-        the_director.refresh_source()
+        the_director._refresh_source()
 
 
 class ScreencastDirectorPreviousCommand(sublime_plugin.ApplicationCommand):
@@ -346,4 +372,4 @@ class ScreencastDirectorPreviousCommand(sublime_plugin.ApplicationCommand):
             window.run_command('screencast_director_bind_source')
         else:
             the_director.index -= 1
-        the_director.refresh_source()
+        the_director._refresh_source()
