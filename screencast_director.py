@@ -41,12 +41,12 @@ class ScreencastDirector(object):
         content = self.source_view.substr(region)
         commands = yaml.load(content)
         for entry in commands:
-            self.execute(entry)
+            self._execute(entry)
         region = self.target_view.sel()[0]
         self.target_view.add_regions('screencast_director', [region], 'source', '', sublime.HIDDEN)
-        self.start_timer()
+        self._start_timer()
 
-    def execute(self, entry):
+    def _execute(self, entry):
         if isinstance(entry, dict):
             command, args = entry.items()[0]
         elif isinstance(entry, list):
@@ -64,7 +64,7 @@ class ScreencastDirector(object):
             else:
                 raise
 
-    def append_command(self, command, delay=None, delay_min=50, delay_max=200):
+    def _append_command(self, command, delay=None, delay_min=None, delay_max=None):
         if delay is None:
             if delay_min is None:
                 delay_min = 50
@@ -73,7 +73,7 @@ class ScreencastDirector(object):
             delay = random.randrange(delay_min, delay_max)
         self.commands.append((command, delay))
 
-    def start_timer(self):
+    def _start_timer(self):
         if self.commands:
             cmd, delay = self.commands.pop(0)
             cursor = self.target_view.get_regions('screencast_director')[0]
@@ -87,9 +87,9 @@ class ScreencastDirector(object):
 
             self.target_view.sel().add(new_cursor)
             self.target_view.add_regions('screencast_director', [new_cursor], 'source', '', sublime.HIDDEN)
-            sublime.set_timeout(self.start_timer, delay)
+            sublime.set_timeout(self._start_timer, delay)
 
-    def write(self, *what_to_write, **kwargs):
+    def write(self, *what_to_write):
         def _write_letter(letter):
             def _write(cursor):
                 e = self.target_view.begin_edit('screencast_director')
@@ -98,7 +98,10 @@ class ScreencastDirector(object):
                 return cursor.a + len(letter)
             return _write
 
+        is_first = True
         for entry in what_to_write:
+            if not is_first:
+                self._append_command(_write_letter("\n"))
             previous_letter = None
             if isinstance(entry, basestring):
                 for letter in entry:
@@ -106,18 +109,37 @@ class ScreencastDirector(object):
                         delay_max = 100
                     else:
                         delay_max = None
-                    self.append_command(_write_letter(letter), delay_max=delay_max)
+                    self._append_command(_write_letter(letter), delay_max=delay_max)
                     previous_letter = letter
             else:
-                self.execute(entry)
+                self._execute(entry)
+            is_first = False
 
-    def write_inside(self, left, middle, right, *others):
+    def write_inside(self, left, middle=None, right=None, *others):
+        """
+        You can use this one of three ways:
+
+            - write_inside: "'The first and last character will be used'"
+            - write_inside: ["'", "explicitly state left and right", "'"]
+            - write_inside:
+                - \"
+                - write: Nest commands inside
+                - \"
+        """
         if others:
+            # write_inside(a, b, c, d, e)
+            #  => left: a, middle: b, right: c, others: [d, e]
             middle = [middle, right]
             right = others[-1]
             middle.extend(others[:-1])
+            #  => left: a, middle: [b, c, d], right: e
+        elif middle is None and right is None:
+            left, middle, right = left[0], left[1:-1], left[-1]
 
-        assert len(left) == len(right), '%i != %i' % (len(left), len(right))
+        assert len(left) == len(right), \
+            'len({left}) ({len_left}) != '\
+            'len({right}) ({len_right})'.format(left=left, len_left=len(left),
+                right=right, len_right=len(right))
 
         def _write_letters(a, b):
             def _write(cursor):
@@ -131,15 +153,15 @@ class ScreencastDirector(object):
         for a in left:
             index -= 1
             b = right[index]
-            self.append_command(_write_letters(a, b))
+            self._append_command(_write_letters(a, b))
 
         if isinstance(middle, basestring):
             self.write(middle)
         elif isinstance(middle, list):
             for entry in middle:
-                self.execute(entry)
+                self._execute(entry)
         else:
-            self.execute(middle)
+            self._execute(middle)
 
         for a in left:
             self.go(len(a))
@@ -150,12 +172,12 @@ class ScreencastDirector(object):
             self.target_view.replace(e, cursor, what_to_write)
             self.target_view.end_edit(e)
             return cursor.a + len(what_to_write)
-        self.append_command(_insert, delay)
+        self._append_command(_insert, delay)
 
     def delay(self, delay=100):
         def _delay(cursor):
             return cursor
-        self.append_command(_delay, delay)
+        self._append_command(_delay, delay)
 
     def go(self, where, delay=None):
         def _go(cursor):
@@ -163,7 +185,7 @@ class ScreencastDirector(object):
             self.target_view.sel().clear()
             self.target_view.sel().add(sublime.Region(cursor, cursor))
             return cursor
-        self.append_command(_go, delay)
+        self._append_command(_go, delay)
 
     def select_all(self, delay=None):
         def _select_all(cursor):
@@ -171,7 +193,7 @@ class ScreencastDirector(object):
             self.target_view.sel().clear()
             self.target_view.sel().add(allofit)
             return allofit
-        self.append_command(_select_all, delay)
+        self._append_command(_select_all, delay)
 
     def delete(self, delay=None):
         def _delete(cursor):
@@ -179,7 +201,7 @@ class ScreencastDirector(object):
             self.target_view.replace(e, cursor, '')
             self.target_view.end_edit(e)
             return cursor.a
-        self.append_command(_delete, delay)
+        self._append_command(_delete, delay)
 
     def clear(self):
         self.select_all()
@@ -193,7 +215,7 @@ class ScreencastDirector(object):
         def _set_mark(cursor):
             self._marks[name] = cursor
             return cursor
-        self.append_command(_set_mark, delay)
+        self._append_command(_set_mark, delay)
 
     def goto_mark(self, name=None, delay=None):
         if not name:
@@ -202,7 +224,7 @@ class ScreencastDirector(object):
         def _goto_mark(cursor):
             cursor = self._marks.get(name, cursor)
             return cursor
-        self.append_command(_goto_mark, delay)
+        self._append_command(_goto_mark, delay)
 
     def select_from_mark(self, name=None, delay=None):
         if not self._marks:
@@ -215,20 +237,24 @@ class ScreencastDirector(object):
             a = self._marks.get(name, cursor).a
             b = cursor.b
             return a, b
-        self.append_command(_select_from_mark, delay)
+        self._append_command(_select_from_mark, delay)
 
     def clear_marks(self, delay=None):
         def _clear_marks(cursor):
             self._marks = {}
             return cursor
-        self.append_command(_clear_marks, delay)
+        self._append_command(_clear_marks, delay)
 
-    def run_command(self, command, args):
+    def run_command(self, command, args=None):
         def _run_command(cursor):
-            self.target_view.run_command(command, args)
-            # cursor = self.target_view.sel()[0]
+            self.target_view.sel().add(cursor)
+            if args is None:
+                self.target_view.run_command(command)
+            else:
+                self.target_view.run_command(command, args)
+            cursor = self.target_view.sel()[0]
             return cursor
-        self.append_command(_run_command)
+        self._append_command(_run_command)
 
 the_director = ScreencastDirector()
 
