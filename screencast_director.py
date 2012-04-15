@@ -83,7 +83,9 @@ class ScreencastDirector(object):
             sublime.status_message('ScreencastDirector compile error: %s' % e.message)
             raise
 
-    def _append_command(self, command, delay=0):
+    def _append_command(self, command, delay=None):
+        if delay is None:
+            delay = 100
         self.commands.append((command, delay))
 
     def _start_timer(self):
