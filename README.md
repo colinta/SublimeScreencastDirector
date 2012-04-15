@@ -119,3 +119,77 @@ instead.
 - delay: 500
 - run_command: [transpose_character]
 ```
+
+Writing Director Commands
+-------------------------
+
+I am totally open to pull requests that add more director functions!  They are
+just a *teensy* bit hard to understand at first if you're just looking at the
+source code.  So here goes.
+
+The `ScreencastDirector` class is the class that contains all the commands that
+can be used in your `director.yaml` files.  An instance of the
+`ScreencastDirector` class is created when the plugin is loaded (`the_director`
+if you're following along in the source).
+
+The entries in your YAML source file are "executed" when you run the
+`screencast_director_run` command, which pretty much delegates the work to
+`ScreencastDirector._run`.  All the entries are "executed" immediately, which is
+to say that the command queue is built up at this time.
+
+Let me say this more clearly: ScreencastDirector methods add one or more
+functions to the command queue, based on the contents of an entry in your YAML
+file.
+
+When you add a command to the queue, you can pass in the `delay` parameter to
+control timing.  Here is the `delay` command, which is the simplest of all:
+
+```python
+def delay(self, delay=100):
+    def _delay(cursor, e):
+        pass
+    self._append_command(_delay, delay)
+```
+
+We don't even need to "sleep" in the command - that's taken care of by passing
+the `delay` parameter to `_append_command`.  We did have to accept the `cursor`
+and `e` arguments.  If you make a change to the position of the cursor, you must
+return that new location (or selection).  The `e` argument is a `sublime.Edit`
+object.  Since most commands will need to make a change of some sort, it is
+provided for convenience.
+
+Let's look at a simplified version of `write`.  It "types" each letter of input,
+with a random delay between each letter to imitate actual typing.  We will need
+to call `target_view.replace` to insert the text (if a previous command makes a
+selection, this command will overwrite it), and then return our new cursor
+location.
+
+```python
+def write(self, what_to_write):
+    def _write_letter(letter):
+        def _write(cursor, e):
+            self.target_view.replace(e, cursor, letter)
+            return cursor.a + len(letter)
+        return _write
+
+    for letter in what_to_write:
+        delay = random.randrange(50, 200)
+        self._append_command(_write_letter(letter), delay=delay)
+```
+
+The actual implementation does much more - it supports multiple arguments, and
+if the argument "looks like" a command, it will execute that entry (aka "add
+those commands to the queue" - remember, an entry adds commands to the queue).
+
+For your commands, just remember:
+
+- For every edit, create a new function and add it to the queue using
+  `_append_command`.  It is common to accept a `delay` argument from the YAML
+  source.
+- The actual command accepts two arguments: `cursor` (a `sublime.Region`
+  object), and `edit` (a `sublime.Edit` object).  Other than that, you
+  should use the arguments that were passed in from the source file.
+
+If you're having trouble, create an [issue][issues] and I'll take a look.
+
+[issues]: https://github.com/colinta/SublimeScreencastDirector/issues
