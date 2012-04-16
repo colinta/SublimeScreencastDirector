@@ -202,6 +202,12 @@ class ScreencastDirector(object):
             return cursor.a + len(what_to_write)
         self._append_command(_insert, delay)
 
+    def nl(self, delay=None):
+        def _nl(cursor, e):
+            self.target_view.replace(e, cursor, "\n")
+            return cursor.a + 1
+        self._append_command(_nl, delay)
+
     def delay(self, delay=100):
         def _delay(cursor, e):
             return cursor
