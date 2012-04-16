@@ -10,7 +10,7 @@ class ScreencastDirector(object):
         self.target_view = None
         self.index = 0
         self.commands = []  # stores a list of commands to perform on the target_view.
-        self._marks = {}
+        self._mark_offsets = {}
 
     def _refresh_source(self):
         if self.source_view is None:
@@ -234,7 +234,12 @@ class ScreencastDirector(object):
             name = '__tmp__'
 
         def _set_mark(cursor, e):
-            self._marks[name] = cursor
+            cursor_0 = self.target_view.line(cursor.a).a
+            self._mark_offsets[name] = cursor.a - cursor_0
+            if self._mark_offsets[name] == 0:
+                self._mark_offsets[name] = 1
+                cursor_0 -= 1
+            self.target_view.add_regions('screencast_director_%s' % name, [sublime.Region(cursor_0, cursor_0)], 'source', '', sublime.HIDDEN)
             return cursor
         self._append_command(_set_mark, delay)
 
@@ -243,26 +248,29 @@ class ScreencastDirector(object):
             name = '__tmp__'
 
         def _goto_mark(cursor, e):
-            cursor = self._marks.get(name, cursor)
-            return cursor
+            cursors = self.target_view.get_regions('screencast_director_%s' % name)
+            return cursors[0].a + self._mark_offsets[name]
         self._append_command(_goto_mark, delay)
 
     def select_from_mark(self, name=None, delay=None):
-        if not self._marks:
+        if not self._mark_offsets:
             return
 
         if not name:
             name = '__tmp__'
 
         def _select_from_mark(cursor, e):
-            a = self._marks.get(name, cursor).a
+            cursors = self.target_view.get_regions('screencast_director_%s' % name)
+            a = cursors[0].a + self._mark_offsets[name]
             b = cursor.b
             return a, b
         self._append_command(_select_from_mark, delay)
 
     def clear_marks(self, delay=None):
         def _clear_marks(cursor, e):
-            self._marks = {}
+            for name in self._mark_offsets:
+                self.target_view.erase_regions('screencast_director_%s' % name)
+            self._mark_offsets = {}
             return cursor
         self._append_command(_clear_marks, delay)
 
