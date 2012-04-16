@@ -1,0 +1,67 @@
+- clear
+- write: "Now I have just activated ScreenDirector using"
+- nl
+- write_inside: "`ctrl+pagedown`.  Let the demo begin!"
+- nl
+
+- clear
+- write: ['First, printing multiple lines',
+    'using "write" and an array.', 'line one',
+    'line two', 'line three']
+
+- write: ['Next, emulating quote matching',
+    'using "write_inside".']
+- write_inside: "'string in single quotes'"
+- nl
+- write_inside: ["'", "again, using array", "'"]
+- nl
+- write_inside:
+    - "'"
+    - write: "you can nest commands,"
+    - nl
+    - write: " too!"
+    - "'"
+- nl
+
+- write: 'Moving around using "go"'
+- nl
+- delay: 1500  # pause for 1.5 secs
+- go: -10  # go back ten
+- write: HI!
+- delay: 1500  # pause for 1.5 secs
+- go: 10  # return to previous position
+
+- select_all
+- delay: 1500  # pause for 1.5 secs
+- delete
+- delay: 500  # pause for .5 secs
+- write: |
+    I'm gonna do the same thing, but using
+    clear instead of select_all + delete
+- delay: 1500  # pause for 1.5 secs
+- clear
+
+
+- set_mark  # same as set_mark: __tmp__
+- write: '<-- Mark set at __tmp__.'
+- nl
+- set_mark: my_mark_name
+- write: '<-- Mark set at my_mark_name'
+- nl
+- goto_mark  # same as goto_mark: __tmp__
+- write: 'Back at __tmp__'
+- goto_mark: my_mark_name
+- write: 'Back at my_mark_name'
+
+- set_mark
+- write: "this will be deleted in one second"
+- delay: 1000
+- select_from_mark
+- delete
+
+- write: "I will fix this mitsake."
+- delay: 500
+- go: -5
+- delay: 500
+- run_command: [transpose_character]
+
