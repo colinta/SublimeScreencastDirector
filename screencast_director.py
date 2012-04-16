@@ -124,10 +124,16 @@ class ScreencastDirector(object):
                 return cursor.a + len(letter)
             return _write
 
-        is_first = True
+        if len(what_to_write) > 1:
+            def _add_newline(line):
+                if not isinstance(line, basestring):
+                    return line
+                if not line or line[-1] != "\n":
+                    return line + "\n"
+                return line
+            what_to_write = map(_add_newline, what_to_write)
+
         for entry in what_to_write:
-            if not is_first:
-                self._append_command(_write_letter("\n"))
             previous_letter = None
             if isinstance(entry, basestring):
                 for letter in entry:
@@ -140,7 +146,6 @@ class ScreencastDirector(object):
                     previous_letter = letter
             else:
                 self._execute(entry)
-            is_first = False
 
     def write_inside(self, left, middle=None, right=None, *others):
         """
