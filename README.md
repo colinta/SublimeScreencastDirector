@@ -192,4 +192,27 @@ For your commands, just remember:
 
 If you're having trouble, create an [issue][issues] and I'll take a look.
 
+Examples
+--------
+
+These are all silent films, which is just my preference.  Any screen recording
+app can take audio, and you can actually sit back and read your script while
+ScreencastDirector does all the typing — typo free!
+
+<http://colinta.com/projects/move_text.html>
+<http://colinta.com/projects/transpose_character.html>
+<http://colinta.com/projects/bracketeer.html>
+<http://colinta.com/projects/quick_find.html>
+
+Even ScreencastDirector itself!
+
+<http://colinta.com/projects/screencast_director.html>
+
+Unfortunately, I didn't save the transcripts for most of these... I usually just
+use a scratch document.  I *recommend* that you do as I say and not as I do:
+save your transcripts!  It is useful when you realize there was a mistake and
+need to rerecord the video.  Here is the director.yaml file for
+[ScreencastDirector][]: <https://github.com/colinta/SublimeScreencastDirector/blob/master/director.yaml>
+
 [issues]: https://github.com/colinta/SublimeScreencastDirector/issues
+[ScreencastDirector]: http://colinta.com/projects/screencast_director.html
