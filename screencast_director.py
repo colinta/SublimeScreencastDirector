@@ -137,11 +137,12 @@ class ScreencastDirector(object):
             previous_letter = None
             if isinstance(entry, basestring):
                 for letter in entry:
-                    delay_min = 50
-                    delay_max = 200
                     if previous_letter == letter:
+                        delay = 50
+                    else:
+                        delay_min = 50
                         delay_max = 100
-                    delay = random.randrange(delay_min, delay_max)
+                        delay = random.randrange(delay_min, delay_max)
                     self._append_command(_write_letter(letter), delay=delay)
                     previous_letter = letter
             else:
