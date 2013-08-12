@@ -1,7 +1,17 @@
 {
-  "repo": "SublimeScreencastDirector",
   "name": "ScreencastDirector",
   "description": "This is how I make screencasts on <http://colinta.com>.",
   "author": "Colin Thomas-Arnold (colinta)",
-  "homepage": "https://github.com/colinta/SublimeScreencastDirector"
+  "details": "https://github.com/colinta/SublimeScreencastDirector",
+  "labels": ["automation"],
+  "releases": [
+    {
+      "details": "https://github.com/colinta/SublimeScreencastDirector/tree/master",
+      "sublime_text": "<3000"
+    },
+    {
+      "details": "https://github.com/colinta/SublimeScreencastDirector/tags",
+      "sublime_text": ">=3000"
+    }
+  ]
 }
