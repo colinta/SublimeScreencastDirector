@@ -6,7 +6,7 @@
   "labels": ["automation"],
   "releases": [
     {
-      "details": "https://github.com/colinta/SublimeScreencastDirector/tree/master",
+      "details": "https://github.com/colinta/SublimeScreencastDirector/tree/st2",
       "sublime_text": "<3000"
     },
     {
