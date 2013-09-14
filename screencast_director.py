@@ -1,7 +1,7 @@
 import random
 import sublime
 import sublime_plugin
-import yaml
+from . import pyyaml
 from functools import reduce
 
 
@@ -54,7 +54,7 @@ class ScreencastDirector(object):
         regions = self.source_view.get_regions('screencast_director')
         region = regions[self.index]
         content = self.source_view.substr(region)
-        commands = yaml.load(content)
+        commands = pyyaml.load(content)
         for entry in commands:
             self._execute(entry)
         if len(self.target_view.sel()):
