@@ -14,6 +14,8 @@ def parse(str, check_nl=True):
 
 
 class ScreencastDirector(object):
+    the_director = None
+
     def __init__(self):
         self.source_view = None
         self.target_view = None
@@ -33,9 +35,9 @@ class ScreencastDirector(object):
             self.index = 0
 
         self.source_view.sel().clear()
-        self.source_view.sel().add(regions[the_director.index])
+        self.source_view.sel().add(regions[ScreencastDirector.the_director.index])
         pos = self.source_view.viewport_position()
-        self.source_view.show_at_center(regions[the_director.index])
+        self.source_view.show_at_center(regions[ScreencastDirector.the_director.index])
         new_pos = self.source_view.viewport_position()
         if abs(new_pos[0] - pos[0]) <= 1.0 and abs(new_pos[1] - pos[1]) <= 1.0:
             self.source_view.set_viewport_position((new_pos[0], new_pos[1] + 1))
@@ -80,7 +82,9 @@ class ScreencastDirector(object):
             - delay
         """
         if isinstance(entry, dict):
-            command, args = entry.items()[0]
+            for item in entry.items():
+                command, args = item
+                break
         elif isinstance(entry, list):
             command, args = entry[0], entry[1:]
         else:
@@ -120,13 +124,16 @@ class ScreencastDirector(object):
             if cursor in self.target_view.sel():
                 self.target_view.sel().subtract(cursor)
 
-            edit = self.target_view.begin_edit('screencast_director')
-            new_cursor = cmd(cursor, edit)
-            self.target_view.end_edit(edit)
+            info = {}
+            def what_to_do(cls, edit):
+                info['new_cursor'] = cmd(cursor, edit)
+            ScreencastDirectorCmdCommand.what_to_do = what_to_do
+            ScreencastDirector.the_director.target_view.run_command('screencast_director_cmd')
 
+            new_cursor = info['new_cursor']
             if new_cursor is None:
                 new_cursor = cursor
-            elif isinstance(new_cursor, long) or isinstance(new_cursor, int):
+            elif isinstance(new_cursor, int):
                 new_cursor = sublime.Region(new_cursor, new_cursor)
             elif isinstance(new_cursor, tuple):
                 new_cursor = sublime.Region(new_cursor[0], new_cursor[1])
@@ -151,7 +158,7 @@ class ScreencastDirector(object):
 
         if options.get('write'):
             what_to_write = options['write']
-            if isinstance(what_to_write, basestring):
+            if isinstance(what_to_write, str):
                 what_to_write = [what_to_write]
         delay_min = options.get('delay_min', 40)
         delay_max = options.get('delay_max', 70)
@@ -164,7 +171,7 @@ class ScreencastDirector(object):
 
         if len(what_to_write) > 1:
             def _add_newline(line):
-                if not isinstance(line, basestring):
+                if not isinstance(line, str):
                     return line
                 if not line or line[-1] != "\n":
                     return line + "\n"
@@ -173,7 +180,7 @@ class ScreencastDirector(object):
 
         for entry in what_to_write:
             previous_letter = None
-            if isinstance(entry, basestring):
+            if isinstance(entry, str):
                 entry = parse(entry)
                 for letter in entry:
                     if delay_min == delay_max:
@@ -225,7 +232,7 @@ class ScreencastDirector(object):
             b = right[index]
             self._append_command(_write_letters(a, b))
 
-        if isinstance(middle, basestring):
+        if isinstance(middle, str):
             self.write(middle)
         elif isinstance(middle, list):
             for entry in middle:
@@ -461,15 +468,15 @@ class ScreencastDirector(object):
             return cursor
         self._append_command(_run_command)
 
-the_director = ScreencastDirector()
+ScreencastDirector.the_director = ScreencastDirector()
 
 
 class ScreencastDirectorBindSourceCommand(sublime_plugin.ApplicationCommand):
     def run(self):
         window = sublime.active_window()
-        source_view = the_director.source_view = window.active_view()
+        source_view = ScreencastDirector.the_director.source_view = window.active_view()
         if source_view is not None:
-            the_director.index = 0
+            ScreencastDirector.the_director.index = 0
 
             source_view.sel().clear()
             allofit = sublime.Region(0, source_view.size())
@@ -505,57 +512,64 @@ class ScreencastDirectorBindSourceCommand(sublime_plugin.ApplicationCommand):
                 )
 
             sublime.status_message('Bound source view and set index to 0')
-            the_director._refresh_source()
+            ScreencastDirector.the_director._refresh_source()
 
 
-class ScreencastDirectorBindTargetCommand(sublime_plugin.ApplicationCommand):
+class ScreencastDirectorCmdCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.what_to_do(edit)
+
+
+class ScreencastDirectorBindTargetCommand(sublime_plugin.WindowCommand):
     def run(self):
         window = sublime.active_window()
-        the_director.target_view = window.active_view()
+        ScreencastDirector.the_director.target_view = window.active_view()
         sublime.status_message('Bound target view')
-        the_director._refresh_source()
+        ScreencastDirector.the_director._refresh_source()
 
 
-class ScreencastDirectorRunCommand(sublime_plugin.ApplicationCommand):
-    def run(self):
+class ScreencastDirectorRunCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
         window = sublime.active_window()
-        source_view = the_director.source_view
-        if the_director.target_view is None:
+        source_view = ScreencastDirector.the_director.source_view
+        target_view = ScreencastDirector.the_director.target_view
+        if target_view is None:
             window.run_command('screencast_director_bind_target')
-        target_view = the_director.target_view
+            target_view = ScreencastDirector.the_director.target_view
 
         if source_view is None:
             sublime.status_message('Choose your source view')
             return
 
         if target_view.id() == source_view.id():
-            the_director.target_view = None
+            ScreencastDirector.the_director.target_view = None
             sublime.status_message('Choose your target view')
             return
 
-        the_director._run()
-        the_director.index += 1
-        the_director._refresh_source()
-        sublime.status_message('Index is at {index}'.format(index=the_director.index))
+        ScreencastDirector.the_director.command = self
+        ScreencastDirector.the_director._run()
+        ScreencastDirector.the_director.index += 1
+        ScreencastDirector.the_director._refresh_source()
+        sublime.status_message('Index is at {index}'.format(index=ScreencastDirector.the_director.index))
 
 
 class ScreencastDirectorNextCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        if the_director.source_view is None:
+        if ScreencastDirector.the_director.source_view is None:
             window = sublime.active_window()
             window.run_command('screencast_director_bind_source')
         else:
-            the_director.index += 1
-        the_director._refresh_source()
-        sublime.status_message('Index is at {index}'.format(index=the_director.index))
+            ScreencastDirector.the_director.index += 1
+        ScreencastDirector.the_director._refresh_source()
+        sublime.status_message('Index is at {index}'.format(index=ScreencastDirector.the_director.index))
 
 
 class ScreencastDirectorPreviousCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        if the_director.source_view is None:
+        if ScreencastDirector.the_director.source_view is None:
             window = sublime.active_window()
             window.run_command('screencast_director_bind_source')
         else:
-            the_director.index -= 1
-        the_director._refresh_source()
-        sublime.status_message('Index is at {index}'.format(index=the_director.index))
+            ScreencastDirector.the_director.index -= 1
+        ScreencastDirector.the_director._refresh_source()
+        sublime.status_message('Index is at {index}'.format(index=ScreencastDirector.the_director.index))
