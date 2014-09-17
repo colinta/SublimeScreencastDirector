@@ -158,8 +158,8 @@ class ScreencastDirector(object):
 
         if options.get('write'):
             what_to_write = options['write']
-            if isinstance(what_to_write, str):
-                what_to_write = [what_to_write]
+        if isinstance(what_to_write, str):
+            what_to_write = [what_to_write]
         delay_min = options.get('delay_min', 40)
         delay_max = options.get('delay_max', 70)
 
@@ -526,6 +526,19 @@ class ScreencastDirectorBindTargetCommand(sublime_plugin.WindowCommand):
         ScreencastDirector.the_director.target_view = window.active_view()
         sublime.status_message('Bound target view')
         ScreencastDirector.the_director._refresh_source()
+
+
+class ScreencastDirectorPasteCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        target_view = self.view
+        ScreencastDirector.the_director.target_view = target_view
+        ScreencastDirector.the_director.write(sublime.get_clipboard(),
+            delay_min=10,
+            delay_max=20,
+            )
+        region = self.view.sel()[0]
+        target_view.add_regions('screencast_director', [region], 'source', '', sublime.HIDDEN)
+        ScreencastDirector.the_director._start_timer()
 
 
 class ScreencastDirectorRunCommand(sublime_plugin.TextCommand):
