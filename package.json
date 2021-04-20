@@ -6,10 +6,6 @@
   "labels": ["automation"],
   "releases": [
     {
-      "details": "https://github.com/colinta/SublimeScreencastDirector/tree/st2",
-      "sublime_text": "<3000"
-    },
-    {
       "details": "https://github.com/colinta/SublimeScreencastDirector/tags",
       "sublime_text": ">=3000"
     }

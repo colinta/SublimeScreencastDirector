@@ -20,13 +20,6 @@ Or:
 2. clone this repo
 3. Install keymaps for the commands (see Example.sublime-keymap for my preferred keys)
 
-### Sublime Text 2
-
-1. Open the Sublime Text 2 Packages folder
-2. clone this repo, but use the `st2` branch
-
-       git clone -b st2 git@github.com:colinta/SublimeScreencastDirector
-
 Commands
 --------
 
@@ -197,7 +190,7 @@ For your commands, just remember:
   object), and `edit` (a `sublime.Edit` object).  Other than that, you
   should use the arguments that were passed in from the source file.
 
-If you're having trouble, create an [issue][issues] and I'll take a look.
+If you're having trouble, create an [issue][] and I'll take a look.
 
 Examples
 --------
@@ -206,20 +199,19 @@ These are all silent films, which is just my preference.  Any screen recording
 app can take audio, and you can actually sit back and read your script while
 ScreencastDirector does all the typing — typo free!
 
-<http://colinta.com/projects/move_text.html>
-<http://colinta.com/projects/transpose_character.html>
-<http://colinta.com/projects/bracketeer.html>
-<http://colinta.com/projects/quick_find.html>
+<https://media.colinta.com/screencasts/bracketeer.mp4>
+<https://media.colinta.com/screencasts/move_text.mp4>
+<https://media.colinta.com/screencasts/quickfind.mp4>
+<https://media.colinta.com/screencasts/transpose_character.mp4>
 
 Even ScreencastDirector itself!
 
-<http://colinta.com/projects/screencast_director.html>
+<https://media.colinta.com/screencasts/screencast_director.mp4>
 
 Unfortunately, I didn't save the transcripts for most of these... I usually just
 use a scratch document.  I *recommend* that you do as I say and not as I do:
 save your transcripts!  It is useful when you realize there was a mistake and
 need to rerecord the video.  Here is the director.yaml file for
-[ScreencastDirector][]: <https://github.com/colinta/SublimeScreencastDirector/blob/master/director.yaml>
+ScreencastDirector: <https://github.com/colinta/SublimeScreencastDirector/blob/master/director.yaml>
 
-[issues]: https://github.com/colinta/SublimeScreencastDirector/issues
-[ScreencastDirector]: http://colinta.com/projects/screencast_director.html
+[issue]: https://github.com/colinta/SublimeScreencastDirector/issues
