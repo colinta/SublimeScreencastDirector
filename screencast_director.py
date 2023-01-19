@@ -107,7 +107,7 @@ class ScreencastDirector(object):
 
     def _append_command(self, command, delay=None):
         if delay is None:
-            delay = 100
+            delay = random.randint(50, 150)
         self.commands.append((command, delay))
 
     def _start_timer(self):
@@ -147,6 +147,15 @@ class ScreencastDirector(object):
             self.target_view.set_syntax_file(syntax)
             return cursor
         self._append_command(_set_syntax)
+
+    def write_parallel(self, *lines):
+        max_len = max([len(text) for (_, _, text) in lines])
+        for offset in range(0, max_len):
+            for (row, col, text) in lines:
+                if len(text) < offset:
+                    continue
+                self.goto(row, col + offset)
+                self.write(text[offset], delay_min=20, delay_max=40)
 
     def write_at(self, row, col, text):
         self.goto(row, col)

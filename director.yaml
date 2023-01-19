@@ -9,6 +9,13 @@
     'using "write" and an array.', 'line one',
     'line two', 'line three']
 
+- clear
+- write: "Fun for text effects:"
+- write_parallel:
+    - [4, 0, 'line 1']
+    - [5, 0, 'line 2']
+    - [6, 0, 'line 3']
+
 - write: ['Next, emulating quote matching',
     'using "write_inside".']
 - write_inside: "'string in single quotes'"
@@ -64,4 +71,3 @@
 - go: -5
 - delay: 500
 - run_command: [transpose_character]
-
