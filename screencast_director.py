@@ -102,7 +102,7 @@ class ScreencastDirector(object):
             else:
                 raise
         except AssertionError as e:
-            sublime.status_message('ScreencastDirector compile error: %s' % e.message)
+            self.view.show_popup('ScreencastDirector compile error: %s' % e.message)
             raise
 
     def _append_command(self, command, delay=None):
@@ -510,7 +510,7 @@ class ScreencastDirectorBindSourceCommand(sublime_plugin.ApplicationCommand):
                 region = sublime.Region(start, end)
                 blocks.append(region)
             if not blocks:
-                sublime.status_message('ScreencastDirector could not parse commands.')
+                self.view.show_popup('ScreencastDirector could not parse commands.')
                 return
             source_view.add_regions(
                 'screencast_director',
@@ -520,7 +520,7 @@ class ScreencastDirectorBindSourceCommand(sublime_plugin.ApplicationCommand):
                 sublime.DRAW_OUTLINED
                 )
 
-            sublime.status_message('Bound source view and set index to 0')
+            self.view.show_popup('Bound source view and set index to 0')
             ScreencastDirector.the_director._refresh_source()
 
 
@@ -533,7 +533,7 @@ class ScreencastDirectorBindTargetCommand(sublime_plugin.WindowCommand):
     def run(self):
         window = sublime.active_window()
         ScreencastDirector.the_director.target_view = window.active_view()
-        sublime.status_message('Bound target view')
+        self.view.show_popup('Bound target view')
         ScreencastDirector.the_director._refresh_source()
 
 
@@ -560,12 +560,12 @@ class ScreencastDirectorRunCommand(sublime_plugin.TextCommand):
             target_view = ScreencastDirector.the_director.target_view
 
         if source_view is None:
-            sublime.status_message('Choose your source view')
+            self.view.show_popup('Choose your source view')
             return
 
         if target_view.id() == source_view.id():
             ScreencastDirector.the_director.target_view = None
-            sublime.status_message('Choose your target view')
+            self.view.show_popup('Choose your target view')
             return
 
         ScreencastDirector.the_director.command = self
