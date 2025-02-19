@@ -3,10 +3,12 @@
   "description": "This is how I make screencasts on <http://colinta.com>.",
   "author": "Colin T.A. Gray (colinta)",
   "details": "https://github.com/colinta/SublimeScreencastDirector",
-  "labels": ["automation"],
+  "labels": [
+    "automation"
+  ],
   "releases": [
     {
-      "details": "https://github.com/colinta/SublimeScreencastDirector/tags",
+      "tags": true,
       "sublime_text": ">=3000"
     }
   ]
