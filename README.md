@@ -8,17 +8,10 @@ it can mimic all your ST2 commands.
 Installation
 ------------
 
-1. Using Package Control, install "ScreencastDirector"
+Using Package Control, install "ScreencastDirector" or clone this repo in your packages folder.
 
-Or:
-
-1. Open the Sublime Text Packages folder
-    - OS X: ~/Library/Application Support/Sublime Text 3/Packages/
-    - Windows: %APPDATA%/Sublime Text 3/Packages/
-    - Linux: ~/.Sublime Text 3/Packages/ or ~/.config/sublime-text-3/Packages
-
-2. clone this repo
-3. Install keymaps for the commands (see Example.sublime-keymap for my preferred keys)
+I recommended you add key bindings for the commands. I've included my preferred bindings below.
+Copy them to your key bindings file (⌘⇧,).
 
 Commands
 --------
@@ -28,6 +21,19 @@ Commands
 * `screencast_director_run`: Run current command and move "command cursor" to the next command.
 * `screencast_director_previous`: Moves the "command cursor" backward.
 * `screencast_director_next`: Moves the "command cursor" forward.
+
+Key Bindings
+------------
+
+Copy these to your user key bindings file.
+
+<!-- keybindings start -->
+    { "keys": ["ctrl+pageup"], "command": "screencast_director_bind_source" },
+    { "keys": ["ctrl+pagedown"], "command": "screencast_director_run" },
+    { "keys": ["ctrl+home"], "command": "screencast_director_previous" },
+    { "keys": ["ctrl+end"], "command": "screencast_director_next" },
+    { "keys": ["super+ctrl+shift+alt+v"], "command": "screencast_director_paste" },
+<!-- keybindings stop -->
 
 Director Commands and Examples
 ------------------------------
